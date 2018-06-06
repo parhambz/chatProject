@@ -12,35 +12,10 @@ char serverIp[]="127.0.0.1";
 char logedIn[255]="parham";
 
 
-int sendReq(void * msg,int size){
-    struct sockaddr_in server; 
-    int fd = 0;
-    //char buff[1024];
-    //memset(buff, '0',sizeof(buff));
-    fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd<0){
-        printf("fd socket nashod !");
-    }
-	memset(&server, '0', sizeof(server)); 
-    server.sin_family = AF_INET;
-	server.sin_port =  htons(port);
-    int in = inet_pton(AF_INET,serverIp, &server.sin_addr);
-    if (in<0){
-        printf("invalid ip");
-    }
-    in= connect(fd,(struct sockaddr *)&server,sizeof(struct sockaddr));
-    if (in <0){
-        printf("connect nashod !");
-    }
-    send (fd,msg,size,0);
-    close(fd);
 
-    return 0;
-}
 int newContact(char * firtsName,char * lastname,char * username){
-    struct request req;
-    strcpy(req.command,"newcontact");
-    strcpy(req.username,logedIn);
+    struct request req(logedIn,$"newcontact");
+
     //char value[500];
     /*strcpy(value,username);
     strcat(value,"~");
@@ -51,13 +26,37 @@ int newContact(char * firtsName,char * lastname,char * username){
     pair usernamePair($"username",username);
     req.addValue(namePair);
     req.addValue(usernamePair);
-    sendReq(&req,sizeof(struct request));
+    struct request * response;
+    response=req.send();
+    free(response);
     return 0;
 
 }
 int login(char * username,char * password){
-
+    struct request req(logedIn,$"login");
+    pair usernamePair($"username",username);
+    pair passwordPair($"password",password);
+    req.addValue(usernamePair);
+    req.addValue(passwordPair);
+    struct request * response;
+    response=req.send();
+    if (strcmp((*response).values[0].value,"1")==0){
+        strcpy(logedIn,username);
+        return 1;
+    }
     return 0;
+    free(response);
+}
+void logout(){
+    strcpy(logedIn,"-1");
+}
+int goTo(char chatId[10]){
+    struct request req(logedIn,$"goto");
+    pair chatIdPair("chatid",chatId);
+    struct request * response;
+    response=req.send();
+
+    free(response);
 }
 int main()
 {

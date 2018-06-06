@@ -15,7 +15,7 @@ int main()
     int fd,new_socket,valread;
     struct sockaddr_in server; 
     int in;
-    struct request req;
+    struct request req($"",$"");
 
     memset(buff, '0',sizeof(buff));
     memset(&server, '0', sizeof(server)); 
@@ -33,6 +33,8 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
+    struct request response($"server",$"response");
+    send(new_socket,&response,sizeof(struct request),0);
     printf("%s\n",req.values[0].value);
     return 0;
 }
