@@ -37,7 +37,7 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    printf("%s",req.username);
+    printf("%s\n",req.value);
     return 0;
 }
 

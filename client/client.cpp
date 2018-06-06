@@ -8,19 +8,37 @@
 #include <unistd.h>
 int port =8888;
 char serverIp[]="127.0.0.1";
+char logedIn[255]="parham";
 
+#define $ (char*)
+
+typedef struct Pair{
+    char key [255];
+    char value [255];
+
+    Pair(char ikey[255] ,char  ivalue[255]){
+        strcpy(key,ikey);
+        strcpy(value,ivalue);    
+    }
+
+    Pair() {}
+} pair;
 struct request{
     char username[255];
     char command[255];
-    char value[500];
-
+    pair  values[20];
+    int size=0;
+    void addValue(pair p){
+        values[size]=p;
+        size++;
+    }
 };
 
 int sendReq(void * msg,int size){
     struct sockaddr_in server; 
     int fd = 0;
-    char buff[1024];
-    memset(buff, '0',sizeof(buff));
+    //char buff[1024];
+    //memset(buff, '0',sizeof(buff));
     fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd<0){
         printf("fd socket nashod !");
@@ -38,11 +56,34 @@ int sendReq(void * msg,int size){
     }
     send (fd,msg,size,0);
     close(fd);
-}
 
+    return 0;
+}
+int newContact(char * firtsName,char * lastname,char * username){
+    struct request req;
+    strcpy(req.command,"newcontact");
+    strcpy(req.username,logedIn);
+    //char value[500];
+    /*strcpy(value,username);
+    strcat(value,"~");
+    strcat(value,name);
+    strcpy(req.value,value);
+    sendReq(&req,sizeof(struct request));*/
+    pair namePair($"name",firtsName);
+    pair usernamePair($"username",username);
+    req.addValue(namePair);
+    req.addValue(usernamePair);
+    sendReq(&req,sizeof(struct request));
+    return 0;
+
+}
+int login(char * username,char * password){
+
+    return 0;
+}
 int main()
 {
-  
+    //newContact("mamad","m");
     return 0;
 }
 
