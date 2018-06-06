@@ -4,14 +4,10 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include "../headers/requestStruct.h"
 int port=8888;
 int bufferSize=1024;
-struct request{
-    char username[255];
-    char command[255];
-    char value[500];
 
-};
 int main()
 {
     struct sockaddr_in address;
@@ -37,7 +33,7 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    printf("%s\n",req.value);
+    printf("%s\n",req.values[0].value);
     return 0;
 }
 

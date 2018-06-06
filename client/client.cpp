@@ -6,33 +6,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include"../headers/requestStruct.h"
 int port =8888;
 char serverIp[]="127.0.0.1";
 char logedIn[255]="parham";
 
-#define $ (char*)
-
-typedef struct Pair{
-    char key [255];
-    char value [255];
-
-    Pair(char ikey[255] ,char  ivalue[255]){
-        strcpy(key,ikey);
-        strcpy(value,ivalue);    
-    }
-
-    Pair() {}
-} pair;
-struct request{
-    char username[255];
-    char command[255];
-    pair  values[20];
-    int size=0;
-    void addValue(pair p){
-        values[size]=p;
-        size++;
-    }
-};
 
 int sendReq(void * msg,int size){
     struct sockaddr_in server; 
@@ -83,7 +61,7 @@ int login(char * username,char * password){
 }
 int main()
 {
-    //newContact("mamad","m");
+    newContact($"mamad",$"mamadian",$"m");
     return 0;
 }
 
