@@ -53,6 +53,13 @@ struct request{
         values[size]=p;
         size++;
     }
+    void changeValue(char key[255],char value[255]){
+         for (int i=0;i<size;i++){
+            if (strcmp(values[i].key,key)==0){
+                strcpy(values[i].value,value);
+            }
+        }
+    }
     char * getValue(char key[255]){
         for (int i=0;i<size;i++){
             if (strcmp(values[i].key,key)==0){

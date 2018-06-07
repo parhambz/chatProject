@@ -9,6 +9,25 @@
 int port=8888;
 int bufferSize=1024;
 
+char * getUserLoc(int userId){
+    char * saveLoc;
+    saveLoc=(char *)malloc(sizeof(char)*100);
+    strcpy(saveLoc,"../db/users/");
+    char temp[10];
+    sprintf(temp,"%d",userId);
+    strcat(saveLoc,temp);
+    strcat(saveLoc,"/user.bin");
+    return saveLoc;
+}
+struct user getUser(int id){
+    char * userLoc=getUserLoc(id);
+    FILE * userFile;
+    fopen(userLoc,"r");
+    struct user user;
+    fread(&user,sizeof(struct user),1,userFile);
+    free(userLoc);
+    return user;
+}
 int getLastUserId(){
     int lastUserId;
     FILE * lastFP;
@@ -17,7 +36,24 @@ int getLastUserId(){
     fclose(lastFP);
     return lastUserId;
 }
-struct request * addUser(struct request  req){
+struct request  login(struct request req){
+    struct request response($"server",$"login");
+    int users=getLastUserId();
+    pair resPair($"res",$"false");
+    response.addValue(resPair);
+    for (int i=0;i<users;i++){
+        struct user user=getUser(i);
+        if(strcmp(user.username,req.getValue($"username"))==0 && strcmp(user.password,req.getValue($"password"))==0){
+            response.changeValue($"res",$"true");
+            char sUserId[20];
+            sprintf(sUserId,"%d",i);
+            pair userIdPair($"userid",sUserId);
+            req.addValue(userIdPair);
+        }
+    }
+    return response;
+}
+struct request  addUser(struct request  req){
     struct user user;
     user.setInfo(req.getValue($"firstname"),req.getValue($"lastname"),req.getValue($"username"),req.getValue($"password"));
     int lastUserId=getLastUserId();
@@ -27,20 +63,18 @@ struct request * addUser(struct request  req){
     lastFP=fopen("../db/users/lastid.bin","w");
     fwrite(&lastUserId,sizeof(int),1,lastFP);
     fclose(lastFP);
-    char saveLoc[500];
-    strcpy(saveLoc,"../db/users/");
-    char temp[10];
-    sprintf(temp,"%d",lastUserId);
-    strcat(saveLoc,temp);
-    strcat(saveLoc,"/user.bin");
+    char * saveLoc =getUserLoc(lastUserId);
     FILE * userFile;
     userFile=fopen(saveLoc,"w");
     fwrite(&user,sizeof(struct user),1,userFile);
     fclose(userFile);
     struct request response("server","adduser");
+    char temp[10];
+    sprintf(temp,"%d",lastUserId);
     pair userIdPair($ "userid",temp);
     response.addValue(userIdPair);
-    return &response;
+    free(saveLoc);
+    return response;
 }
 
 struct request * requestHandle(struct request req){
@@ -74,10 +108,8 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    struct request * response;
-    response=requestHandle(req);
-    send(new_socket,response,sizeof(struct request),0);
-    free(response);
+    send(new_socket,requestHandle(req),sizeof(struct request),0);
+
     return 0;
 }
 
