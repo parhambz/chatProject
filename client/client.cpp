@@ -52,15 +52,65 @@ void logout(){
 }
 int goTo(char chatId[10]){
     struct request req(logedIn,$"goto");
-    pair chatIdPair("chatid",chatId);
+    pair chatIdPair($"chatid",chatId);
+    struct request *  response;
+    response=req.send();
+
+    free(response);
+    return 0;
+}
+int sendMsg(char chatId[20],char msg[10000]){
+    struct request req(logedIn,$"sendmsg");
+    pair chatIdPair($"chatid",chatId);
+    pair msgPair($"msg",msg);
+    req.addValue(chatIdPair);
+    req.addValue(msgPair);
+    struct request * response;
+    response=req.send();
+    free(response);
+    return 0;
+}
+int leave(char chatId[20]){
+    struct request req(logedIn,$"leave");
+    pair chatIdPair($"chatid",chatId);
+    req.addValue(chatIdPair);
+    struct request * response;
+    response=req.send();
+    free(response);
+    return 0;
+}
+int newChat(char username[255]){
+    struct request req(logedIn,$"newchat");
+    pair usernamePair($"username",username);
+    req.addValue(usernamePair);
     struct request * response;
     response=req.send();
 
     free(response);
+    return 0;
+}
+int newGp(char gpName[255]){
+    struct request req(logedIn,$"newgp");
+    pair namePair("name",gpName);
+    req.addValue(namePair);
+    struct request * response;
+    response=req.send();
+
+    free(response);
+    return 0;
+}
+int newchannel(char channelName[255]){
+    struct request req(logedIn,$"newchannel");
+    pair namePair($"name",channelName);
+    req.addValue(namePair);
+    struct request * response;
+    response=req.send();
+    free(response);
+    return 0;
 }
 int main()
 {
-    newContact($"mamad",$"mamadian",$"m");
+    
     return 0;
 }
 

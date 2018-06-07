@@ -28,7 +28,7 @@ struct request * sendReq(void * msg,int size){
 }
 typedef struct Pair{
     char key [255];
-    char value [255];
+    char value [10000];
 
     Pair(char ikey[255] ,char  ivalue[255]){
         strcpy(key,ikey);
