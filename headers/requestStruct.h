@@ -53,7 +53,13 @@ struct request{
         values[size]=p;
         size++;
     }
-
+    char * getValue(char key[255]){
+        for (int i=0;i<size;i++){
+            if (strcmp(values[i].key,key)==0){
+                return values[i].value;
+            }
+        }
+    }
     struct request * send(){
        return sendReq(this,sizeof(struct request));
     }

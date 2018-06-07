@@ -5,9 +5,50 @@
 #include <netinet/in.h>
 #include <string.h>
 #include "../headers/requestStruct.h"
+#include "../headers/userStruct.h"
 int port=8888;
 int bufferSize=1024;
 
+int getLastUserId(){
+    int lastUserId;
+    FILE * lastFP;
+    lastFP=fopen("../db/users/lastid.bin","r");
+    fread(&lastUserId,sizeof(int),1,lastFP);
+    fclose(lastFP);
+    return lastUserId;
+}
+struct request * addUser(struct request  req){
+    struct user user;
+    user.setInfo(req.getValue($"firstname"),req.getValue($"lastname"),req.getValue($"username"),req.getValue($"password"));
+    int lastUserId=getLastUserId();
+    lastUserId++;
+    user.id=lastUserId;
+    FILE * lastFP;
+    lastFP=fopen("../db/users/lastid.bin","w");
+    fwrite(&lastUserId,sizeof(int),1,lastFP);
+    fclose(lastFP);
+    char saveLoc[500];
+    strcpy(saveLoc,"../db/users/");
+    char temp[10];
+    sprintf(temp,"%d",lastUserId);
+    strcat(saveLoc,temp);
+    strcat(saveLoc,"/user.bin");
+    FILE * userFile;
+    userFile=fopen(saveLoc,"w");
+    fwrite(&user,sizeof(struct user),1,userFile);
+    fclose(userFile);
+    struct request response("server","adduser");
+    pair userIdPair($ "userid",temp);
+    response.addValue(userIdPair);
+    return &response;
+}
+
+struct request * requestHandle(struct request req){
+    struct request * response;
+    response=(struct request *)malloc(sizeof(struct request));
+    
+    return response;
+}
 int main()
 {
     struct sockaddr_in address;
@@ -33,9 +74,10 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    struct request response($"server",$"response");
-    send(new_socket,&response,sizeof(struct request),0);
-    printf("%s\n",req.values[0].value);
+    struct request * response;
+    response=requestHandle(req);
+    send(new_socket,response,sizeof(struct request),0);
+    free(response);
     return 0;
 }
 

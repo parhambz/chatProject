@@ -11,8 +11,6 @@ int port =8888;
 char serverIp[]="127.0.0.1";
 char logedIn[255]="parham";
 
-
-
 int newContact(char * firtsName,char * lastname,char * username){
     struct request req(logedIn,$"newcontact");
 
@@ -105,6 +103,14 @@ int newchannel(char channelName[255]){
     req.addValue(namePair);
     struct request * response;
     response=req.send();
+    free(response);
+    return 0;
+}
+int showContacts(){
+    struct request req(logedIn,$"showcontacts");
+    struct request * response;
+    response=req.send();
+
     free(response);
     return 0;
 }
