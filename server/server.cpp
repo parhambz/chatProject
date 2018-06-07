@@ -26,6 +26,7 @@ struct user getUser(int id){
     struct user user;
     fread(&user,sizeof(struct user),1,userFile);
     free(userLoc);
+    fclose(userFile);
     return user;
 }
 int getLastUserId(){
@@ -77,11 +78,15 @@ struct request  addUser(struct request  req){
     return response;
 }
 
-struct request * requestHandle(struct request req){
-    struct request * response;
-    response=(struct request *)malloc(sizeof(struct request));
+struct request  requestHandle(struct request req){
+    if (strcmp(req.command,"login")==0){
+        return  login(req);
+    }
+    else if (strcmp(req.command,"adduser")==0)
+    {
+        return addUser(req);
+    }
     
-    return response;
 }
 int main()
 {
@@ -108,7 +113,7 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    send(new_socket,requestHandle(req),sizeof(struct request),0);
+    send(new_socket,& requestHandle(req),sizeof(struct request),0);
 
     return 0;
 }
