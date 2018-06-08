@@ -10,7 +10,7 @@
 #define $ (char*)
 int port=8888;
 char serverIp[]="127.0.0.1";
-struct request * sendReq(void * msg,int size);
+struct request  sendReq(void * msg,int size);
 typedef struct Pair{
     char key [255];
     char value [10000];
@@ -57,15 +57,15 @@ struct request{
         }
         return $"";
     }
-    struct request * send(){
+    struct request send(){
        return sendReq(this,sizeof(struct request));
     }
 };
 
-struct request * sendReq(void * msg,int size){
+struct request sendReq(void * msg,int size){
     struct sockaddr_in server; 
-    struct request * response;
-    response=(struct request *)malloc(sizeof(struct request));
+    struct request  response;
+    //response=(struct request *)malloc(sizeof(struct request));
     int fd = 0;
     //char buff[1024];
     //memset(buff, '0',sizeof(buff));
@@ -85,7 +85,7 @@ struct request * sendReq(void * msg,int size){
         printf("connect nashod !");
     }
     send (fd,msg,size,0);
-    read(fd,response,sizeof(struct request));
+    read(fd,&response,sizeof(struct request));
     close(fd);
     return response;
 }

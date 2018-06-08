@@ -1,5 +1,4 @@
 #include "../headers/chatStruct.h"
-
 int bufferSize=1024;
 
 char * getUserLoc(int userId){
@@ -40,7 +39,6 @@ int usernameToId(char username[255]){
     } 
     return -1;   
 }
-
 struct request  login(struct request req){
     struct request response($"server",$"login");
     int users=getLastUserId();
@@ -80,7 +78,6 @@ struct request  addUser(struct request  req){
     fclose(userFile);
     return response;
 }
-
 int getLastChatId(){
     int lastChatId;
     FILE * lastFP;
@@ -89,7 +86,6 @@ int getLastChatId(){
     fclose(lastFP);
     return lastChatId;  
 }
-
 void addToLastChatId(){
     int lastChatId=getLastChatId();
     lastChatId++;
@@ -182,6 +178,18 @@ struct request  requestHandle(struct request req){
     else if (strcmp(req.command,"adduser")==0)
     {
         return addUser(req);
+    }
+    else if (strcmp(req.command,"newchat")==0)
+    {
+        return newChat(req);
+    }
+    else if (strcmp(req.command,"newgp")==0)
+    {
+        return newGp(req);
+    }
+    else if (strcmp(req.command,"newchannel")==0)
+    {
+        return newChannel(req);
     }
     return response;
 }
