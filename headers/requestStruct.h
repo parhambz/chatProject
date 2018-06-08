@@ -43,7 +43,9 @@ struct request{
     char command[255];
     pair  values[20];
     int size;
-
+    request(){
+        request($"",$"");
+    }
     request(char iusername[255],char icommand[255]) {
         strcpy(username,iusername);
         strcpy(command,icommand);

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "../headers/requestStruct.h"
 #include "../headers/userStruct.h"
+#include "../headers/chatStruct.h"
 int port=8888;
 int bufferSize=1024;
 
@@ -28,6 +29,15 @@ struct user getUser(int id){
     free(userLoc);
     fclose(userFile);
     return user;
+}
+int usernameToId(char username[255]){
+    int users=getLastUserId();
+    for (int i=0;i<users;i++){
+        struct user user=getUser(i);
+        if(strcmp(user.username,username)==0 ){
+            return user.id;
+        }
+    }    
 }
 int getLastUserId(){
     int lastUserId;
@@ -55,29 +65,121 @@ struct request  login(struct request req){
     return response;
 }
 struct request  addUser(struct request  req){
-    struct user user;
+    struct user user(true);
     user.setInfo(req.getValue($"firstname"),req.getValue($"lastname"),req.getValue($"username"),req.getValue($"password"));
-    int lastUserId=getLastUserId();
-    lastUserId++;
-    user.id=lastUserId;
     FILE * lastFP;
     lastFP=fopen("../db/users/lastid.bin","w");
-    fwrite(&lastUserId,sizeof(int),1,lastFP);
+    fwrite(&(user.id),sizeof(int),1,lastFP);
     fclose(lastFP);
-    char * saveLoc =getUserLoc(lastUserId);
+    char * saveLoc =getUserLoc(user.id);
     FILE * userFile;
     userFile=fopen(saveLoc,"w");
     fwrite(&user,sizeof(struct user),1,userFile);
     fclose(userFile);
     struct request response("server","adduser");
     char temp[10];
-    sprintf(temp,"%d",lastUserId);
+    sprintf(temp,"%d",user.id);
     pair userIdPair($ "userid",temp);
     response.addValue(userIdPair);
     free(saveLoc);
+    userFile=fopen(user.contactLoc,"w");
+    fclose(userFile);
     return response;
 }
 
+int getLastChatId(){
+    int lastChatId;
+    FILE * lastFP;
+    lastFP=fopen("../db/chats/lastid.bin","r");
+    fread(&lastChatId,sizeof(int),1,lastFP);
+    fclose(lastFP);
+    return lastChatId;  
+}
+
+void addToLastChatId(){
+    int lastChatId=getLastChatId();
+    lastChatId++;
+    FILE * lastFP;
+    lastFP=fopen("../db/chats/lastid.bin","w");
+    fwrite(&lastChatId,sizeof(int),1,lastFP);
+    fclose(lastFP);
+}
+struct request newChat(struct request req){
+    struct chatInfo chat(true);
+    strcpy(chat.name,"");
+    strcpy(chat.type,"chat");
+    struct user user;
+    int id=usernameToId(req.getValue($"username"));
+    user=getUser(id);
+    user.addChat(chat.id);
+
+    int id=usernameToId(req.username);
+    user=getUser(id);
+    user.addChat(chat.id);
+
+    chat.addAdmin(req.getValue($"username"));
+    chat.addAdmin(req.username);
+    FILE * file;
+    file=fopen(chat.chatMessagesLoc,"W");
+    fclose(file);
+    file=fopen(chat.chatInfoLoc,"w");
+    fwrite(&chat,sizeof(struct chatInfo),1,file);
+    fclose(file);
+    struct request response($"server",$"newchat");
+    char chatIdS[20];
+    sprintf(chatIdS,"%d",chat.id);
+    pair chatIdPair("chatid",chatIdS);
+    response.addValue(chatIdPair);
+    return response;
+}
+struct request newGp(struct request req){
+    struct chatInfo chat(true);
+    strcpy(chat.name,req.getValue($"name"));
+    strcpy(chat.type,"group");
+    struct user user;
+    int id=usernameToId(req.username);
+    user=getUser(id);
+    user.addChat(chat.id);
+
+
+
+    chat.addAdmin(req.username);
+    FILE * file;
+    file=fopen(chat.chatMessagesLoc,"W");
+    fclose(file);
+    file=fopen(chat.chatInfoLoc,"w");
+    fwrite(&chat,sizeof(struct chatInfo),1,file);
+    fclose(file);
+    struct request response($"server",$"newgp");
+    char chatIdS[20];
+    sprintf(chatIdS,"%d",chat.id);
+    pair chatIdPair("chatid",chatIdS);
+    response.addValue(chatIdPair);
+    return response;   
+}
+struct request newChannel(struct request req){
+    struct chatInfo chat(true);
+    strcpy(chat.name,req.getValue("name"));
+    strcpy(chat.type,"chat");
+    struct user user;
+    int id=usernameToId(req.username);
+    user=getUser(id);
+    user.addChat(chat.id);
+    chat.addAdmin(req.getValue($"username"));
+    chat.addAdmin(req.username);
+    FILE * file;
+    file=fopen(chat.chatMessagesLoc,"W");
+    fclose(file);
+    file=fopen(chat.chatInfoLoc,"w");
+    fwrite(&chat,sizeof(struct chatInfo),1,file);
+    fclose(file);
+    struct request response($"server",$"newchat");
+    char chatIdS[20];
+    sprintf(chatIdS,"%d",chat.id);
+    pair chatIdPair("chatid",chatIdS);
+    response.addValue(chatIdPair);
+    return response;
+}
 struct request  requestHandle(struct request req){
     if (strcmp(req.command,"login")==0){
         return  login(req);
