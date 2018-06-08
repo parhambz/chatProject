@@ -1,3 +1,7 @@
+#include "../headers/userStruct.h"
+int usernameToId(char * username);
+void addToLastChatId();
+int getLastChatId();
 struct message{
     int id;
     char content[10000];
@@ -21,7 +25,7 @@ struct chatInfo{
         id=getLastChatId();
         strcpy(chatMessagesLoc,"../db/users/");
         char temp[10];
-        fprintf(temp,"%d",id);
+        sprintf(temp,"%d",id);
         strcat(chatMessagesLoc,temp);
         strcat(chatMessagesLoc,"msg.bin");
         strcpy(chatInfoLoc,"../db/users/");

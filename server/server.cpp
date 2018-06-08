@@ -1,13 +1,5 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <stdlib.h>
-#include <netinet/in.h>
-#include <string.h>
-#include "../headers/requestStruct.h"
-#include "../headers/userStruct.h"
 #include "../headers/chatStruct.h"
-int port=8888;
+
 int bufferSize=1024;
 
 char * getUserLoc(int userId){
@@ -30,15 +22,6 @@ struct user getUser(int id){
     fclose(userFile);
     return user;
 }
-int usernameToId(char username[255]){
-    int users=getLastUserId();
-    for (int i=0;i<users;i++){
-        struct user user=getUser(i);
-        if(strcmp(user.username,username)==0 ){
-            return user.id;
-        }
-    }    
-}
 int getLastUserId(){
     int lastUserId;
     FILE * lastFP;
@@ -47,6 +30,17 @@ int getLastUserId(){
     fclose(lastFP);
     return lastUserId;
 }
+int usernameToId(char username[255]){
+    int users=getLastUserId();
+    for (int i=0;i<users;i++){
+        struct user user=getUser(i);
+        if(strcmp(user.username,username)==0 ){
+            return user.id;
+        }
+    } 
+    return -1;   
+}
+
 struct request  login(struct request req){
     struct request response($"server",$"login");
     int users=getLastUserId();
@@ -76,7 +70,7 @@ struct request  addUser(struct request  req){
     userFile=fopen(saveLoc,"w");
     fwrite(&user,sizeof(struct user),1,userFile);
     fclose(userFile);
-    struct request response("server","adduser");
+    struct request response($"server",$"adduser");
     char temp[10];
     sprintf(temp,"%d",user.id);
     pair userIdPair($ "userid",temp);
@@ -113,7 +107,7 @@ struct request newChat(struct request req){
     user=getUser(id);
     user.addChat(chat.id);
 
-    int id=usernameToId(req.username);
+    id=usernameToId(req.username);
     user=getUser(id);
     user.addChat(chat.id);
 
@@ -128,7 +122,7 @@ struct request newChat(struct request req){
     struct request response($"server",$"newchat");
     char chatIdS[20];
     sprintf(chatIdS,"%d",chat.id);
-    pair chatIdPair("chatid",chatIdS);
+    pair chatIdPair($"chatid",chatIdS);
     response.addValue(chatIdPair);
     return response;
 }
@@ -153,13 +147,13 @@ struct request newGp(struct request req){
     struct request response($"server",$"newgp");
     char chatIdS[20];
     sprintf(chatIdS,"%d",chat.id);
-    pair chatIdPair("chatid",chatIdS);
+    pair chatIdPair($"chatid",chatIdS);
     response.addValue(chatIdPair);
     return response;   
 }
 struct request newChannel(struct request req){
     struct chatInfo chat(true);
-    strcpy(chat.name,req.getValue("name"));
+    strcpy(chat.name,req.getValue($"name"));
     strcpy(chat.type,"chat");
     struct user user;
     int id=usernameToId(req.username);
@@ -176,11 +170,12 @@ struct request newChannel(struct request req){
     struct request response($"server",$"newchat");
     char chatIdS[20];
     sprintf(chatIdS,"%d",chat.id);
-    pair chatIdPair("chatid",chatIdS);
+    pair chatIdPair($"chatid",chatIdS);
     response.addValue(chatIdPair);
     return response;
 }
 struct request  requestHandle(struct request req){
+    struct request response($"server",$"commandhandle");
     if (strcmp(req.command,"login")==0){
         return  login(req);
     }
@@ -188,7 +183,7 @@ struct request  requestHandle(struct request req){
     {
         return addUser(req);
     }
-    
+    return response;
 }
 int main()
 {
@@ -215,7 +210,8 @@ int main()
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
     valread=read(new_socket,&req,sizeof(struct request));
-    send(new_socket,& requestHandle(req),sizeof(struct request),0);
+    struct request response=requestHandle(req);
+    send(new_socket,&response,sizeof(struct request),0);
 
     return 0;
 }

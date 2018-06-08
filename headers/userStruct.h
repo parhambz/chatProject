@@ -1,3 +1,6 @@
+#include "../headers/requestStruct.h"
+int getLastUserId();
+
 struct user{
     int id;
     char firstname[255];

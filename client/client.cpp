@@ -1,14 +1,5 @@
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include"../headers/requestStruct.h"
-int port =8888;
-char serverIp[]="127.0.0.1";
+
 char logedIn[255]="parham";
 
 int newContact(char * firtsName,char * lastname,char * username){
@@ -89,7 +80,7 @@ int newChat(char username[255]){
 }
 int newGp(char gpName[255]){
     struct request req(logedIn,$"newgp");
-    pair namePair("name",gpName);
+    pair namePair($"name",gpName);
     req.addValue(namePair);
     struct request * response;
     response=req.send();
