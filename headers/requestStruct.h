@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include"sys/stat.h"
 #include <string.h>
 #define $ (char*)
 int port=8888;

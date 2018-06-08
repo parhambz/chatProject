@@ -15,6 +15,7 @@ struct user{
         if (!flag){
             return;
         }
+        
         int lastUserId=getLastUserId();
         lastUserId++;
         id=lastUserId;
@@ -23,6 +24,7 @@ struct user{
         char temp[10];
         sprintf(temp,"%d",id);
         strcat(userInfoLoc,temp);
+        mkdir(userInfoLoc, 0700);
         strcat(userInfoLoc,"/user.bin");
 
         strcpy(contactLoc,"../db/users/");

@@ -27,6 +27,8 @@ struct chatInfo{
         char temp[10];
         sprintf(temp,"%d",id);
         strcat(chatMessagesLoc,temp);
+        //create the directory
+        mkdir(chatMessagesLoc, 0700);
         strcat(chatMessagesLoc,"msg.bin");
         strcpy(chatInfoLoc,"../db/users/");
         strcat(chatInfoLoc,temp);
