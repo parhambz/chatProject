@@ -2,6 +2,20 @@
 
 char logedIn[255]="parham";
 
+int addUser(char * firstname,char * lastname,char * username,char * password){
+    struct request req(logedIn,$"adduser");
+    pair firtsnamePair($"firstname",firstname);
+    pair lastnamePair($"lastname",lastname);
+    pair usernamePair($"username",username);
+    pair passwordPair($"password",password);
+    req.addValue(firtsnamePair);
+    req.addValue(lastnamePair);
+    req.addValue(usernamePair);
+    req.addValue(passwordPair);
+    struct request respone=req.send();
+    printf("%s",respone.getValue($"userid"));
+    return 0;
+}
 int newContact(char * firtsName,char * lastname,char * username){
     struct request req(logedIn,$"newcontact");
 
@@ -28,7 +42,7 @@ int login(char * username,char * password){
     req.addValue(passwordPair);
     struct request response;
     response=req.send();
-    if (strcmp(response.getValue("res"),"true")==0){
+    if (strcmp(response.getValue($"res"),"true")==0){
         strcpy(logedIn,username);
         return 1;
     }
@@ -98,7 +112,8 @@ int showContacts(){
 }
 int main()
 {
-    
+    //addUser($"parham",$"bagherzadeh",$"parham",$"123456");
+    printf("%d",login($"parham",$"123456"));
     return 0;
 }
 

@@ -1,6 +1,6 @@
 #include "../headers/requestStruct.h"
 int getLastUserId();
-
+void addToLastUserId();
 struct user{
     int id;
     char firstname[255];
@@ -17,8 +17,8 @@ struct user{
         }
         
         int lastUserId=getLastUserId();
-        lastUserId++;
         id=lastUserId;
+        addToLastUserId();
         chatsNumber=0;
         strcpy(userInfoLoc,"../db/users/");
         char temp[10];
