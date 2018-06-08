@@ -14,7 +14,7 @@ char * getUserLoc(int userId){
 struct user getUser(int id){
     char * userLoc=getUserLoc(id);
     FILE * userFile;
-    fopen(userLoc,"r");
+    userFile=fopen(userLoc,"r");
     struct user user;
     fread(&user,sizeof(struct user),1,userFile);
     free(userLoc);
@@ -51,15 +51,17 @@ struct request login(struct request req){
     int users=getLastUserId();
     pair resPair($"res",$"false");
     response.addValue(resPair);
-    for (int i=0;i<users;i++){
-        printf("%d",i);
+    for (int i=0;i<(users+1);i++){
+        //printf("%d",i);
         struct user user=getUser(i);
+        //printf("aa");
         if(strcmp(user.username,req.getValue($"username"))==0 && strcmp(user.password,req.getValue($"password"))==0){
             response.changeValue($"res",$"true");
             char sUserId[20];
             sprintf(sUserId,"%d",i);
             pair userIdPair($"userid",sUserId);
             response.addValue(userIdPair);
+            return response;
         }
     }
     return response;
