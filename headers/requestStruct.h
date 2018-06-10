@@ -13,7 +13,7 @@ char serverIp[]="127.0.0.1";
 struct request  sendReq(void * msg,int size);
 typedef struct Pair{
     char key [255];
-    char value [10000];
+    char value [6000];
 
     Pair(char ikey[255] ,char  ivalue[255]){
         strcpy(key,ikey);
@@ -28,7 +28,7 @@ typedef struct Pair{
 struct request{
     char username[255];
     char command[255];
-    pair  values[20];
+    pair  values[10];
     int size;
     request(){
         request($"",$"");
@@ -39,8 +39,10 @@ struct request{
         size = 0;
     }
     void addValue(pair p){
+        printf("Adding new value\n");
         values[size]=p;
         size++;
+        //printf("New size: %d",size);
     }
     void changeValue(char key[255],char value[255]){
          for (int i=0;i<size;i++){
@@ -50,12 +52,14 @@ struct request{
         }
     }
     char * getValue(char key[255]){
+        //printf("%d",size);
         for (int i=0;i<size;i++){
+            //printf("%s/%s\n",values[i].key,key);
             if (strcmp(values[i].key,key)==0){
                 return values[i].value;
             }
         }
-        return $"";
+        return $"r";
     }
     struct request send(){
        return sendReq(this,sizeof(struct request));

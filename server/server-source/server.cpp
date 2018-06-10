@@ -31,8 +31,8 @@ int getLastUserId(){
 }
 void addToLastUserId(){
     FILE * lastFP;
-    lastFP=fopen("../db/users/lastid.bin","w");
     int id=getLastUserId()+1;
+    lastFP=fopen("../db/users/lastid.bin","w");
     fwrite(&id,sizeof(int),1,lastFP);
     fclose(lastFP);
 }
@@ -81,6 +81,7 @@ struct request  addUser(struct request  req){
     response.addValue(userIdPair);
     userFile=fopen(user.contactLoc,"w");
     fclose(userFile);
+
     return response;
 }
 int getLastChatId(){
@@ -206,8 +207,9 @@ int main()
     int fd,new_socket,valread;
     struct sockaddr_in server; 
     int in;
-    struct request req($"",$"");
-
+    
+    char *data = (char*) malloc(sizeof(struct request));
+    memset(data,0,sizeof(struct request));
     memset(buff, '0',sizeof(buff));
     memset(&server, '0', sizeof(server)); 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -223,8 +225,10 @@ int main()
     new_socket=accept(fd, (struct sockaddr*)NULL, NULL);
     //valread = read( new_socket , buff, sizeof(buff));
     //printf("%s",buff);
-    valread=read(new_socket,&req,sizeof(struct request));
-    struct request response=requestHandle(req);
+    valread=read(new_socket,data,sizeof(struct request));
+    struct request* req = (struct request*)data;
+    //printf("\nRec data: %s\n",(*req).values[2].value);
+    struct request response=requestHandle(*req);
     send(new_socket,&response,sizeof(struct request),0);
 
     return 0;
