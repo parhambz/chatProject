@@ -4,7 +4,7 @@ void addToLastChatId();
 int getLastChatId();
 struct message{
     int id;
-    char content[10000];
+    char content[5000];
     char userName[255];
     int chatId;
 };

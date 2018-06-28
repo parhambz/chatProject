@@ -84,6 +84,16 @@ struct request  addUser(struct request  req){
 
     return response;
 }
+struct user getUserInfo(int userId){
+    char * loc=getUserLoc(userId);
+    FILE * file;
+    file=fopen(loc,"r");
+    struct user user;
+    fread(&user,sizeof(struct user),1,file);
+    fclose(file);
+    free(loc);
+    return user;
+}
 int getLastChatId(){
     int lastChatId;
     FILE * lastFP;
@@ -116,7 +126,7 @@ struct request newChat(struct request req){
     chat.addAdmin(req.getValue($"username"));
     chat.addAdmin(req.username);
     FILE * file;
-    file=fopen(chat.chatMessagesLoc,"W");
+    file=fopen(chat.chatMessagesLoc,"w");
     fclose(file);
     file=fopen(chat.chatInfoLoc,"w");
     fwrite(&chat,sizeof(struct chatInfo),1,file);
@@ -175,6 +185,83 @@ struct request newChannel(struct request req){
     pair chatIdPair($"chatid",chatIdS);
     response.addValue(chatIdPair);
     return response;
+}
+char * chatInfoLoc(int chatId){
+    char * saveLoc;
+    saveLoc=(char *)malloc(sizeof(char)*100);
+    strcpy(saveLoc,"../db/chats/");
+    char temp[10];
+    sprintf(temp,"%d",chatId);
+    strcat(saveLoc,temp);
+    strcat(saveLoc,"/info.bin");
+    return saveLoc;
+}
+struct chatInfo getChatStruct(int chatId){
+    struct chatInfo chat;
+    FILE * file;
+    file=fopen(chatInfoLoc(chatId),"r");
+    fread(&chat,sizeof(struct chatInfo),1,file);
+    return chat;
+}
+struct message * getLast10 (int chatId){
+    struct message * res;
+    res=(struct message *)malloc(sizeof(struct message)*10+1);
+    FILE * file;
+    struct chatInfo chatInfo;
+    chatInfo=getChatStruct(chatId);
+    file=fopen(chatInfo.chatMessagesLoc,"r");
+
+    for (int i=0; i<10;i++){
+        fseek(file,sizeof(struct message)*i*(-1),SEEK_END);
+        fread(&(res[i]),sizeof(struct message),1,file);
+    }
+    return res;
+}
+struct request Fgoto(struct request req){
+    int userId=usernameToId(req.username);
+    struct user user;
+    user= getUserInfo(userId);
+    int chatId=usernameToId(req.getValue($"chatid"));
+    struct request response($"server",$"goto");
+    for (int i=0 ;i<user.chatsNumber;i++){
+        if (user.chats[i]==chatId){
+            pair res($"res",$"true");
+            struct message * msgs=getLast10(chatId);
+            char temp[6000];
+            for (int j=0 ;j<10;j++){
+                struct message tempMsg=*(msgs+sizeof(struct message)*j);
+                strcpy(temp,tempMsg.userName);
+                strcat(temp,"/");
+                char msgId[10];
+                sprintf(msgId,"%d",tempMsg.id);
+                strcat(temp,msgId);
+                strcat(temp," :\n");
+                strcat(temp,tempMsg.content);
+                char pairName[255];
+                sprintf(pairName,"%d",j);
+                pair p(pairName,temp);
+                response.addValue(p);
+            }
+            free(msgs);
+        }
+    }
+    pair res ($"res",$"false");
+    return response;
+}
+struct request getChatLists(struct request request){
+    struct request response;
+    int id=usernameToId(request.username);
+    struct user user=getUserInfo(id);
+    char res[4000];
+    for(int i =0 ;i<user.chatsNumber;i++){
+        strcat(res,"\n");
+        char chatId[10];
+        sprintf(chatId,"%d",user.chats[i]);
+        strcat(res,chatId);
+        strcat(res," --> ");
+        getUserInfo
+    }
+
 }
 struct request  requestHandle(struct request req){
     struct request response($"server",$"commandhandle");
