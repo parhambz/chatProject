@@ -3,23 +3,7 @@ int usernameToId(char * username);
 void addToLastChatId();
 int getLastChatId();
 struct chatInfo getChatStruct(int chatId);
-struct message{
-    int id;
-    char content[5000];
-    char userName[255];
-    int chatId;
-    void save(){
-        struct chatInfo chat =getChatStruct(chatId);
-        FILE * file;
-        file=fopen(chat.chatMessagesLoc,"a");
-        fseek(file,chat.lastMessageId*sizeof(struct message),SEEK_SET);
-        fwrite(this,sizeof(struct message),1,file);
-        fclose(file);
-        file=fopen(chat.chatInfoLoc,"w");
-        fwrite(&chat,sizeof(struct chatInfo),1,file);
-        
-    }
-};
+
 struct chatInfo{
     int id;
     char type[20];
@@ -52,5 +36,22 @@ struct chatInfo{
         int id =usernameToId(username);
         admins[adminNumbers]=id;
         adminNumbers++;
+    }
+};
+struct message{
+    int id;
+    char content[5000];
+    char userName[255];
+    int chatId;
+    void save(){
+        struct chatInfo chat =getChatStruct(chatId);
+        FILE * file;
+        file=fopen(chat.chatMessagesLoc,"a");
+        fseek(file,chat.lastMessageId*sizeof(struct message),SEEK_SET);
+        fwrite(this,sizeof(struct message),1,file);
+        fclose(file);
+        file=fopen(chat.chatInfoLoc,"w");
+        fwrite(&chat,sizeof(struct chatInfo),1,file);
+        
     }
 };

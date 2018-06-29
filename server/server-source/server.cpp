@@ -252,9 +252,9 @@ struct request getChatLists(struct request req){
         struct chatInfo chat=getChatStruct(user.chats[i]);
         strcat(res,chat.name);
     }
-    pair chatList("chatlist",res);
+    pair chatList($"chatlist",res);
     response.addValue(chatList);
-    response.send();
+    return response;
 
 }
 struct request sendMsg(struct request req){
@@ -295,8 +295,8 @@ struct request search(struct request req){
     int lastUserId=getLastUserId();
     char name[255];
     strcpy(name,req.getValue($"name"));
-    struct request response($"server","search");
-    pair res($"res","false");
+    struct request response($"server",$"search");
+    pair res($"res",$"false");
     for (int i=0 ;i<lastUserId;i++){
         struct user user =getUserInfo(i);
         if (strcmp(name,user.firstname)==0){

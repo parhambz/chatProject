@@ -1,7 +1,6 @@
 #include"../headers/requestStruct.h"
 
 char logedIn[255]="parham";
-
 int addUser(char * firstname,char * lastname,char * username,char * password){
     struct request req(logedIn,$"adduser");
     pair firtsnamePair($"firstname",firstname);
@@ -110,9 +109,16 @@ int showContacts(){
     response=req.send();
     return 0;
 }
+int search (char name[255]){
+    struct request req(logedIn,$"search");
+    pair namePair ("name",name);
+    req.addValue(namePair);
+    struct request response;
+    response=req.send();
+    return 0;
+}
 int main()
 {
-    //addUser($"parham",$"bagherzadeh",$"parham",$"123456");
-    printf("%d",login($"parham",$"123456"));
+
     return 0;
 }
