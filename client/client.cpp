@@ -63,7 +63,7 @@ int goTo(char chatId[10]){
 int sendMsg(char chatId[20],char msg[10000]){
     struct request req(logedIn,$"sendmsg");
     pair chatIdPair($"chatid",chatId);
-    pair msgPair($"msg",msg);
+    pair msgPair($"content",msg);
     req.addValue(chatIdPair);
     req.addValue(msgPair);
     struct request response;

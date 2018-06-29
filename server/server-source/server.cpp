@@ -11,14 +11,14 @@ char * getUserLoc(int userId){
     strcat(saveLoc,"/user.bin");
     return saveLoc;
 }
-struct user getUser(int id){
-    char * userLoc=getUserLoc(id);
-    FILE * userFile;
-    userFile=fopen(userLoc,"r");
+struct user getUserInfo(int userId){
+    char * loc=getUserLoc(userId);
+    FILE * file;
+    file=fopen(loc,"r");
     struct user user;
-    fread(&user,sizeof(struct user),1,userFile);
-    free(userLoc);
-    fclose(userFile);
+    fread(&user,sizeof(struct user),1,file);
+    fclose(file);
+    free(loc);
     return user;
 }
 int getLastUserId(){
@@ -39,7 +39,7 @@ void addToLastUserId(){
 int usernameToId(char username[255]){
     int users=getLastUserId();
     for (int i=0;i<users;i++){
-        struct user user=getUser(i);
+        struct user user=getUserInfo(i);
         if(strcmp(user.username,username)==0 ){
             return user.id;
         }
@@ -53,7 +53,7 @@ struct request login(struct request req){
     response.addValue(resPair);
     for (int i=0;i<(users+1);i++){
         //printf("%d",i);
-        struct user user=getUser(i);
+        struct user user=getUserInfo(i);
         //printf("aa");
         if(strcmp(user.username,req.getValue($"username"))==0 && strcmp(user.password,req.getValue($"password"))==0){
             response.changeValue($"res",$"true");
@@ -84,16 +84,6 @@ struct request  addUser(struct request  req){
 
     return response;
 }
-struct user getUserInfo(int userId){
-    char * loc=getUserLoc(userId);
-    FILE * file;
-    file=fopen(loc,"r");
-    struct user user;
-    fread(&user,sizeof(struct user),1,file);
-    fclose(file);
-    free(loc);
-    return user;
-}
 int getLastChatId(){
     int lastChatId;
     FILE * lastFP;
@@ -116,11 +106,11 @@ struct request newChat(struct request req){
     strcpy(chat.type,"chat");
     struct user user;
     int id=usernameToId(req.getValue($"username"));
-    user=getUser(id);
+    user=getUserInfo(id);
     user.addChat(chat.id);
 
     id=usernameToId(req.username);
-    user=getUser(id);
+    user=getUserInfo(id);
     user.addChat(chat.id);
 
     chat.addAdmin(req.getValue($"username"));
@@ -144,7 +134,7 @@ struct request newGp(struct request req){
     strcpy(chat.type,"group");
     struct user user;
     int id=usernameToId(req.username);
-    user=getUser(id);
+    user=getUserInfo(id);
     user.addChat(chat.id);
 
 
@@ -169,7 +159,7 @@ struct request newChannel(struct request req){
     strcpy(chat.type,"chat");
     struct user user;
     int id=usernameToId(req.username);
-    user=getUser(id);
+    user=getUserInfo(id);
     user.addChat(chat.id);
     chat.addAdmin(req.getValue($"username"));
     chat.addAdmin(req.username);
@@ -248,9 +238,9 @@ struct request Fgoto(struct request req){
     pair res ($"res",$"false");
     return response;
 }
-struct request getChatLists(struct request request){
+struct request getChatLists(struct request req){
     struct request response;
-    int id=usernameToId(request.username);
+    int id=usernameToId(req.username);
     struct user user=getUserInfo(id);
     char res[4000];
     for(int i =0 ;i<user.chatsNumber;i++){
@@ -259,9 +249,68 @@ struct request getChatLists(struct request request){
         sprintf(chatId,"%d",user.chats[i]);
         strcat(res,chatId);
         strcat(res," --> ");
-        getUserInfo
+        struct chatInfo chat=getChatStruct(user.chats[i]);
+        strcat(res,chat.name);
     }
+    pair chatList("chatlist",res);
+    response.addValue(chatList);
+    response.send();
 
+}
+struct request sendMsg(struct request req){
+    struct request response($"server",$"sendmsg");
+    int userId= usernameToId(req.username);
+    struct user user=getUserInfo(userId);
+    int chatId=atoi(req.getValue($"chatid"));
+    pair res($"res",$"false");
+    for (int i=0;i<user.chatsNumber;i++){
+        if(user.chats[i]==chatId){
+            struct chatInfo chat=getChatStruct(chatId);
+            if(strcmp(chat.type,"chat")==0||strcmp(chat.type,"group")==0){
+                struct message msg;
+                msg.id=chat.lastMessageId+1;
+                msg.chatId=atoi(req.getValue($"chatid"));
+                strcpy(msg.content,req.getValue($"content"));
+                strcpy(msg.userName,req.username);
+                msg.save();
+                strcpy(res.value,"true");
+                chat.lastMessageId++;
+            }
+            else if(strcmp(chat.type,"channel")==0 && strcmp(chat.type,"group")==0){
+                struct message msg;
+                msg.id=chat.lastMessageId+1;
+                msg.chatId=atoi(req.getValue($"chatid"));
+                strcpy(msg.content,req.getValue($"content"));
+                strcpy(msg.userName,req.username);
+                msg.save();
+                strcpy(res.value,"true");
+                chat.lastMessageId++;
+            }
+        }
+    }
+    response.addValue(res);
+    return response;
+}
+struct request search(struct request req){
+    int lastUserId=getLastUserId();
+    char name[255];
+    strcpy(name,req.getValue($"name"));
+    struct request response($"server","search");
+    pair res($"res","false");
+    for (int i=0 ;i<lastUserId;i++){
+        struct user user =getUserInfo(i);
+        if (strcmp(name,user.firstname)==0){
+            strcpy(res.value,"true");
+            pair detail($"detail",user.firstname);
+            strcat(detail.value," ");
+            strcat(detail.value,user.lastname);
+            strcat(detail.value,": ");
+            strcat(detail.value,user.username);
+            response.addValue(detail);
+        }
+    }
+    response.addValue(res);
+    return response;
 }
 struct request  requestHandle(struct request req){
     struct request response($"server",$"commandhandle");
@@ -283,6 +332,14 @@ struct request  requestHandle(struct request req){
     else if (strcmp(req.command,"newchannel")==0)
     {
         return newChannel(req);
+    }
+    else if (strcmp(req.command,"goto")==0)
+    {
+        return Fgoto(req);
+    }
+    else if (strcmp(req.command,"search")==0)
+    {
+        return search(req);
     }
     return response;
 }
